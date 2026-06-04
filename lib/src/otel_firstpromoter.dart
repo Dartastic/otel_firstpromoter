@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_firstpromoter_suppression.dart';
 
@@ -50,48 +49,65 @@ Future<T> tracedFirstPromoter<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_firstpromoter');
   final span = t.startSpan('firstpromoter $operation', kind: SpanKind.client);
   try {
-    span.setStringAttribute('rpc.system', 'firstpromoter');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('rpc.system', 'firstpromoter')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.companyId != null) {
-        span.setStringAttribute('firstpromoter.company.id', res.companyId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('firstpromoter.company.id', res.companyId!)
+        ]));
       }
       if (res.promoterId != null) {
-        span.setStringAttribute('firstpromoter.promoter.id', res.promoterId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('firstpromoter.promoter.id', res.promoterId!)
+        ]));
       }
       if (res.campaignId != null) {
-        span.setStringAttribute('firstpromoter.campaign.id', res.campaignId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('firstpromoter.campaign.id', res.campaignId!)
+        ]));
       }
       if (res.referralId != null) {
-        span.setStringAttribute('firstpromoter.referral.id', res.referralId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('firstpromoter.referral.id', res.referralId!)
+        ]));
       }
       if (res.status != null) {
-        span.setStringAttribute('firstpromoter.status', res.status!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('firstpromoter.status', res.status!)]));
       }
       if (res.commissionAmount != null) {
-        span.setDoubleAttribute(
-          'firstpromoter.commission.amount',
-          res.commissionAmount!,
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeDouble(
+            'firstpromoter.commission.amount',
+            res.commissionAmount!,
+          )
+        ]));
       }
       if (res.currency != null) {
-        span.setStringAttribute('firstpromoter.currency', res.currency!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('firstpromoter.currency', res.currency!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('firstpromoter.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('firstpromoter.error.code', res.errorCode!)
+        ]));
       }
-      final fail =
-          res.errorCode != null ||
+      final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-          ErrorResource.errorType.key,
-          res.errorCode ?? 'firstpromoter.error',
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            ErrorResource.errorType.key,
+            res.errorCode ?? 'firstpromoter.error',
+          )
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
