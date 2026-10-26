@@ -1,11 +1,12 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_firstpromoter_suppression.dart';
 
 class FirstPromoterResult {
+  /// Creates a result.
   const FirstPromoterResult({
     this.companyId,
     this.promoterId,
@@ -31,8 +32,13 @@ class FirstPromoterResult {
   final String? errorMessage;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class FirstPromoterCallResult<T> {
+  /// Creates a call result.
   const FirstPromoterCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final FirstPromoterResult? result;
 }
@@ -40,71 +46,73 @@ class FirstPromoterCallResult<T> {
 Future<T> tracedFirstPromoter<T>({
   required String operation,
   required Future<FirstPromoterCallResult<T>> Function() invoke,
-  Tracer? tracer,
+  APITracer? tracer,
 }) async {
   if (firstPromoterInstrumentationSuppressed()) {
     final r = await invoke();
     return r.value;
   }
-  final t = tracer ?? OTel.tracerProvider().getTracer('otel_firstpromoter');
+  final t = tracer ?? OTelAPI.tracerProvider().getTracer('otel_firstpromoter');
   final span = t.startSpan('firstpromoter $operation', kind: SpanKind.client);
   try {
-    span.addAttributes(
-        OTel.attributes([OTel.attributeString('rpc.system', 'firstpromoter')]));
+    span.addAttributes(OTelAPI.attributes(
+        [OTelAPI.attributeString('rpc.system', 'firstpromoter')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.companyId != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('firstpromoter.company.id', res.companyId!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('firstpromoter.company.id', res.companyId!)
         ]));
       }
       if (res.promoterId != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('firstpromoter.promoter.id', res.promoterId!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('firstpromoter.promoter.id', res.promoterId!)
         ]));
       }
       if (res.campaignId != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('firstpromoter.campaign.id', res.campaignId!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('firstpromoter.campaign.id', res.campaignId!)
         ]));
       }
       if (res.referralId != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('firstpromoter.referral.id', res.referralId!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('firstpromoter.referral.id', res.referralId!)
         ]));
       }
       if (res.status != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('firstpromoter.status', res.status!)]));
+        span.addAttributes(OTelAPI.attributes(
+            [OTelAPI.attributeString('firstpromoter.status', res.status!)]));
       }
       if (res.commissionAmount != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeDouble(
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeDouble(
             'firstpromoter.commission.amount',
             res.commissionAmount!,
           )
         ]));
       }
       if (res.currency != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeString('firstpromoter.currency', res.currency!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('firstpromoter.currency', res.currency!)
+        ]));
       }
       if (res.statusCode != null) {
-        span.addAttributes(OTel.attributes(
-            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeInt('http.response.status_code', res.statusCode!)
+        ]));
       }
       if (res.errorCode != null) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString('firstpromoter.error.code', res.errorCode!)
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString('firstpromoter.error.code', res.errorCode!)
         ]));
       }
       final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.addAttributes(OTel.attributes([
-          OTel.attributeString(
-            ErrorResource.errorType.key,
+        span.addAttributes(OTelAPI.attributes([
+          OTelAPI.attributeString(
+            ErrorAttributes.errorType.key,
             res.errorCode ?? 'firstpromoter.error',
           )
         ]));
